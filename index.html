@@ -311,6 +311,12 @@
             ✨ Multi-Specialty Hospitals: Somajiguda | Secunderabad | Malakpet | Hitec City
         </div>
 
+        <div style="background: #fff3e0; padding: 8px; text-align: center; border-bottom: 1px solid #ffe0b2;">
+            <button onclick="setLanguage('en')" id="langEn" style="padding: 6px 16px; margin: 3px; border: 2px solid #00695c; border-radius: 20px; background: #00695c; color: white; font-weight: 600; cursor: pointer;">English</button>
+            <button onclick="setLanguage('te')" id="langTe" style="padding: 6px 16px; margin: 3px; border: 2px solid #ff9800; border-radius: 20px; background: white; color: #ff9800; font-weight: 600; cursor: pointer;">తెలుగు</button>
+            <button onclick="setLanguage('hi')" id="langHi" style="padding: 6px 16px; margin: 3px; border: 2px solid #ff9800; border-radius: 20px; background: white; color: #ff9800; font-weight: 600; cursor: pointer;">हिंदी</button>
+        </div>
+
         <div class="status-bar">
             <div class="status-indicator">
                 <span class="status-dot"></span>
@@ -354,8 +360,12 @@
     </div>
 
     <script>
+        let currentLang = 'en';
+
         const HOSPITAL_INFO = {
             name: "Yashoda Hospitals",
+            nameTelugu: "యషోడా హాస్పిటల్స్",
+            nameHindi: "यशोदा अस्पताल",
             locations: ["Somajiguda", "Secunderabad", "Malakpet", "Hitec City"],
             beds: "2,756 Beds",
             emergency: "24/7 Emergency Care",
@@ -375,20 +385,35 @@
                 "Gastroenterology",
                 "Nephrology"
             ],
-            features: [
-                "Advanced Robotic Surgery",
-                "Liver & Kidney Transplants",
-                "Stereotactic Radiosurgery",
-                "HIPEC Treatment",
-                "TAVR / TMVR",
-                "Capsule Endoscopy",
-                "Arthroscopy",
-                "VATS"
-            ],
             contact: {
                 phone: "+91-40-4567-4567",
                 emergency: "040-4567-4567",
                 website: "www.yashodahospitals.com"
+            }
+        };
+
+        // Language strings
+        const STRINGS = {
+            en: {
+                welcome: "Namaste! Welcome to <strong>Yashoda Hospitals</strong>, Hyderabad. I'm your 24/7 AI voice assistant. How can I help you today?",
+                greeting: "Namaste! Welcome to Yashoda Hospitals. How can I help you today?",
+                listening: "Listening...",
+                ready: "Ready to assist",
+                thinking: "Thinking..."
+            },
+            te: {
+                welcome: "నమస్కారం! <strong>యషోడా హాస్పిటల్స్</strong>కు స్వాగతం. నేను మీ 24/7 AI వాయిస్ అసిస్టెంట్. మీకు ఎలా సహాయపడగలను?",
+                greeting: "నమస్కారం! యషోడా హాస్పిటల్స్‌కు స్వాగతం. మీకు ఎలా సహాయపడగలను?",
+                listening: "వింటున్నాను...",
+                ready: "సహాయం చేయడానికి సిద్ధం",
+                thinking: "ఆలోచిస్తున్నాను..."
+            },
+            hi: {
+                welcome: "नमस्ते! <strong>यशोदा अस्पताल</strong> में आपका स्वागत है। मैं आपका 24/7 AI वॉइस असिस्टेंट हूं। मैं आपकी कैसे मदद कर सकता हूं?",
+                greeting: "नमस्ते! यशोदा अस्पताल में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूं?",
+                listening: "सुन रहा हूं...",
+                ready: "मदद के लिए तैयार",
+                thinking: "सोच रहा हूं..."
             }
         };
 
@@ -439,8 +464,38 @@
             }
         }
 
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('langEn').style.background = lang === 'en' ? '#00695c' : 'white';
+            document.getElementById('langEn').style.color = lang === 'en' ? 'white' : '#00695c';
+            document.getElementById('langTe').style.background = lang === 'te' ? '#ff9800' : 'white';
+            document.getElementById('langTe').style.color = lang === 'te' ? 'white' : '#ff9800';
+            document.getElementById('langHi').style.background = lang === 'hi' ? '#ff9800' : 'white';
+            document.getElementById('langHi').style.color = lang === 'hi' ? 'white' : '#ff9800';
+
+            // Update welcome message
+            const chatArea = document.getElementById('chatArea');
+            chatArea.innerHTML = `
+                <div class="message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-bubble">
+                        ${STRINGS[lang].welcome}
+                    </div>
+                </div>
+            `;
+
+            speak(STRINGS[lang].greeting.replace(/<[^>]*>/g, ''));
+            updateStatus(STRINGS[lang].ready);
+        }
+
         function updateStatus(text) {
-            document.getElementById('statusText').textContent = text;
+            if (STRINGS[currentLang]) {
+                document.getElementById('statusText').textContent = text === 'Ready to assist' ? STRINGS[currentLang].ready : text;
+                document.getElementById('statusText').textContent = text === 'Listening...' ? STRINGS[currentLang].listening : text;
+                document.getElementById('statusText').textContent = text === 'Thinking...' ? STRINGS[currentLang].thinking : text;
+            } else {
+                document.getElementById('statusText').textContent = text;
+            }
         }
 
         function addMessage(text, isBot = true) {
@@ -483,6 +538,19 @@
 
         function processQuery(query) {
             const q = query.toLowerCase();
+
+            // Telugu queries
+            if (currentLang === 'te') {
+                return processTeluguQuery(q);
+            }
+
+            // Hindi queries
+            if (currentLang === 'hi') {
+                return processHindiQuery(q);
+            }
+
+            // English queries (existing logic)
+            const qEn = query.toLowerCase();
 
             // Greetings
             if (q.includes('hello') || q.includes('hi') || q.includes('namaste') || q.includes('hey')) {
@@ -652,6 +720,58 @@
                 speak(response.replace(/<[^>]*>/g, ''));
                 updateStatus('Ready to assist');
             }, 800);
+        }
+
+        // Telugu language processing
+        function processTeluguQuery(q) {
+            if (q.includes('నమస్కారం') || q.includes('hi') || q.includes('hello') || q.includes('మల్ల')) {
+                return "నమస్కారం! యషోడా హాస్పిటల్స్‌కు స్వాగతం. మీకు ఎలా సహాయపడగలను?";
+            }
+            if (q.includes('అపాయింట్') || q.includes('బుక్') || q.includes('అపాయింట్')) {
+                return `📅 <strong>అపాయింట్‌మెంట్ బుక్ చేయడం</strong><br><br>కాల్: ${HOSPITAL_INFO.contact.phone}<br>వెబ్‌సైట్: ${HOSPITAL_INFO.contact.website}`;
+            }
+            if (q.includes('డాక్టర్') || q.includes('వైద్య') || q.includes('స్పెషలిస్ట్')) {
+                return "👨‍⚕️ <strong>వైద్య నిపుణులు</strong><br><br>మా స్పెషలిస్ట్‌లలో ఉన్నారు:<br>• కార్డియాలజీ<br>• న్యూరోలజీ<br>• ఆంకాలజీ<br>• గాస్ట్రోంటరాలజీ<br>• ఆర్థోపెడిక్స్<br><br>మీ ఆరోగ్య సమస్య చెప్పండి, సరైన డాక్టర్‌ను కనుగొనడంలో సహాయపడతాను.";
+            }
+            if (q.includes('ఎమర్జెన్సీ') || q.includes('అత్యవసర') || q.includes('అపాయింట్')) {
+                return `🚑 <strong>24/7 అత్యవసర సేవలు</strong><br><br>అత్యవసర హాట్‌లైన్: <strong>${HOSPITAL_INFO.contact.emergency}</strong><br><br>అన్ని 4 బ్రాంచ్‌లలో అత్యవసర సేవలు అందుబాటులో ఉన్నాయి.`;
+            }
+            if (q.includes('చిరుమ') || q.includes('లొకేషన్') || q.includes('ఎక్కడ')) {
+                return "📍 <strong>మా బ్రాంచ్‌లు</strong><br><br>• <strong>సోమాజిగూడ</strong><br>• <strong>సెకండరాబాద్</strong><br>• <strong>మలక్‌పేట</strong><br>• <strong>హైటెక్ సిటీ</strong>";
+            }
+            if (q.includes('హెల్త్') || q.includes('చెకప్') || q.includes('ప్యాకేజీ')) {
+                return "💊 <strong>హెల్త్ చెకప్ ప్యాకేజీలు</strong><br><br>• ఎగ్జిక్యూటివ్ హెల్త్ చెకప్<br>• కార్డియాక్ రిస్క్ అసెస్‌మెంట్<br>• డయాబెటీస్ స్క్రీనింగ్<br>• ఫుల్ బాడీ చెకప్<br><br>వివరాల కోసం కాల్ చేయండి.";
+            }
+            if (q.includes('ధన్యవాద') || q.includes('థ్యాంక్')) {
+                return "మీకు ధన్యవాదాలు! 🙏<br><br>మరో something else ask చేయాలనుకుంటున్నారా?";
+            }
+            return `ధన్యవాదాలు! 🙏<br><br>యషోడా హాస్పిటల్స్‌లో ${HOSPITAL_INFO.specialties.length}కి పైగా స్పెషాలిటీలు ఉన్నాయి.<br><br>తక్షణ సహాయం:<br>📞 కాల్: ${HOSPITAL_INFO.contact.phone}<br>🌐: ${HOSPITAL_INFO.contact.website}`;
+        }
+
+        // Hindi language processing
+        function processHindiQuery(q) {
+            if (q.includes('नमस्ते') || q.includes('हेलो') || q.includes('hello') || q.includes('हाय')) {
+                return "नमस्ते! यशोदा अस्पताल में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूं?";
+            }
+            if (q.includes('अपॉइंट') || q.includes('बुक') || q.includes('appointment')) {
+                return `📅 <strong>अपॉइंटमेंट बुक करें</strong><br><br>काल करें: ${HOSPITAL_INFO.contact.phone}<br>वेबसाइट: ${HOSPITAL_INFO.contact.website}`;
+            }
+            if (q.includes('डॉक्टर') || q.includes('चिकित्सक') || q.includes('विशेषज्ञ')) {
+                return "👨‍⚕️ <strong>हमारे विशेषज्ञ डॉक्टर</strong><br><br>हमारे विशेषज्ञों में शामिल हैं:<br>• कार्डियोलॉजी<br>• न्यूरोलॉजी<br>• ऑन्कोलॉजी<br>• गैस्ट्रोएंटरोलॉजी<br>• ऑर्थोपेडिक्स<br><br>अपनी स्वास्थ्य समस्या बताएं.";
+            }
+            if (q.includes('इमरजेंसी') || q.includes('आपातकालीन') || q.includes('एमरजेंसी')) {
+                return `🚑 <strong>24/7 आपातकालीन सेवाएं</strong><br><br>इमरजेंसी हॉटलाइन: <strong>${HOSPITAL_INFO.contact.emergency}</strong><br><br>हमारी सभी 4 ब्रांचों पर आपातकालीन सेवाएं उपलब्ध हैं.`;
+            }
+            if (q.includes('पता') || q.includes('लोकेशन') || q.includes('कहाँ')) {
+                return "📍 <strong>हमारी लोकेशन</strong><br><br>• <strong>सोमाजीगूडा</strong><br>• <strong>सिकंदराबाद</strong><br>• <strong>मलाकपेट</strong><br>• <strong>हाइटेक सिटी</strong>";
+            }
+            if (q.includes('हेल्थ') || q.includes('चेकअप') || q.includes('पैकेज')) {
+                return "💊 <strong>हेल्थ चेकअप पैकेज</strong><br><br>• एग्जीक्यूटिव हेल्थ चेकअप<br>• कार्डियक रिस्क असेसमेंट<br>• डायबिटीज स्क्रीनिंग<br>• फुल बॉडी चेकअप<br><br>जानकारी के लिए काल करें.";
+            }
+            if (q.includes('धन्यवाद') || q.includes('थैंक्स') || q.includes('शुक्रिया')) {
+                return "आपका धन्यवाद! 🙏<br><br>कुछ और पूछना चाहते हैं?";
+            }
+            return `धन्यवाद! 🙏<br><br>यशोदा अस्पताल में ${HOSPITAL_INFO.specialties.length}से अधिक स्पेशलिटी उपलब्ध हैं.<br><br>तुरंत सहायता के लिए:<br>📞 काल: ${HOSPITAL_INFO.contact.phone}<br>🌐: ${HOSPITAL_INFO.contact.website}`;
         }
 
         function askQuestion(question) {
