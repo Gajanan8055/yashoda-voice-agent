@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yashoda Hospitals - AI Voice Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00897b 0%, #00695c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00695c, #00897b);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #00695c;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .tagline {
+            background: #e0f2f1;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #00695c;
+            font-weight: 600;
+        }
+
+        .status-bar {
+            padding: 15px;
+            text-align: center;
+            background: #f5f5f5;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: #e8f5e9;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #2e7d32;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-area {
+            height: 380px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.bot { justify-content: flex-start; }
+        .message.user { justify-content: flex-end; }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar { background: #00695c; color: white; }
+        .message.user .message-avatar { background: #ff9800; color: white; }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user .message-bubble {
+            background: #00695c;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .quick-actions {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            background: #e0f2f1;
+            color: #00695c;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .quick-btn:hover {
+            background: #00695c;
+            color: white;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .voice-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: #00695c;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover { background: #004d40; transform: scale(1.05); }
+        .voice-btn.recording { background: #c62828; animation: pulse-red 1s infinite; }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(198,40,40,0.5); }
+            50% { box-shadow: 0 0 0 15px rgba(198,40,40,0); }
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .text-input:focus { border-color: #00695c; }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #ff9800;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover { background: #f57c00; transform: scale(1.05); }
+
+        .wave-animation {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: #00695c;
+            border-radius: 2px;
+            animation: wave 1s infinite;
+        }
+
+        .wave-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+        .wave-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { height: 15px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { height: 25px; animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { height: 10px; animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.5); }
+        }
+
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .dept-item {
+            padding: 8px 10px;
+            background: #e0f2f1;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #00695c;
+            text-align: center;
+        }
+
+        .contact-card {
+            background: #fff3e0;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .contact-card h4 {
+            color: #e65100;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏥</div>
+            <h1>Yashoda Hospitals</h1>
+            <p>AI Voice Agent - 24/7 Virtual Assistant</p>
+        </div>
+
+        <div class="tagline">
+            ✨ Multi-Specialty Hospitals: Somajiguda | Secunderabad | Malakpet | Hitec City
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span id="statusText">Ready to assist</span>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble">
+                    Namaste! Welcome to <strong>Yashoda Hospitals</strong>, Hyderabad.
+                    <br><br>
+                    I'm your 24/7 AI voice assistant. I can help you with:
+                    <br>• Book doctor appointments
+                    <br>• Find specialists
+                    <br>• Emergency services
+                    <br>• Location & directions
+                    <br>• Health packages
+                    <br><br>
+                    How can I assist you today?
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="askQuestion('Book an appointment')">📅 Book Appointment</button>
+            <button class="quick-btn" onclick="askQuestion('Find a specialist')">👨‍⚕️ Find Doctor</button>
+            <button class="quick-btn" onclick="askQuestion('Emergency services')">🚑 Emergency</button>
+            <button class="quick-btn" onclick="askQuestion('Health checkup packages')">💊 Health Packages</button>
+            <button class="quick-btn" onclick="askQuestion('Hospital locations')">📍 Locations</button>
+        </div>
+
+        <div class="input-area">
+            <div class="input-row">
+                <input type="text" class="text-input" id="textInput" placeholder="Type or speak your query..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendTextMessage()">➤</button>
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const HOSPITAL_INFO = {
+            name: "Yashoda Hospitals",
+            locations: ["Somajiguda", "Secunderabad", "Malakpet", "Hitec City"],
+            beds: "2,756 Beds",
+            emergency: "24/7 Emergency Care",
+            specialties: [
+                "Cardiology & CT Surgery",
+                "Neuroscience",
+                "Cancer (Oncology)",
+                "Liver Transplant",
+                "Kidney Transplant",
+                "Heart Transplant",
+                "Bone Marrow Transplant",
+                "Robotic Sciences",
+                "Spine Surgery",
+                "Mother & Child",
+                "Fertility",
+                "Orthopedics",
+                "Gastroenterology",
+                "Nephrology"
+            ],
+            features: [
+                "Advanced Robotic Surgery",
+                "Liver & Kidney Transplants",
+                "Stereotactic Radiosurgery",
+                "HIPEC Treatment",
+                "TAVR / TMVR",
+                "Capsule Endoscopy",
+                "Arthroscopy",
+                "VATS"
+            ],
+            contact: {
+                phone: "+91-40-4567-4567",
+                emergency: "040-4567-4567",
+                website: "www.yashodahospitals.com"
+            }
+        };
+
+        let recognition;
+        let isListening = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('textInput').value = transcript;
+                if (event.results[0].isFinal) sendTextMessage();
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('recording');
+                updateStatus('Ready to assist', false);
+            };
+        }
+
+        function speak(text) {
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.95;
+            synth.speak(utterance);
+        }
+
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Please use Chrome browser for voice features.');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('recording');
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('recording');
+                updateStatus('Listening...', true);
+            }
+        }
+
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function addMessage(text, isBot = true) {
+            const chatArea = document.getElementById('chatArea');
+            const div = document.createElement('div');
+            div.className = `message ${isBot ? 'bot' : 'user'}`;
+            div.innerHTML = `
+                <div class="message-avatar">${isBot ? '🤖' : '👤'}</div>
+                <div class="message-bubble">${text}</div>
+            `;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const div = document.createElement('div');
+            div.className = 'message bot';
+            div.id = 'typingIndicator';
+            div.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble">
+                    <div class="wave-animation">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTyping() {
+            const t = document.getElementById('typingIndicator');
+            if (t) t.remove();
+        }
+
+        function processQuery(query) {
+            const q = query.toLowerCase();
+
+            // Greetings
+            if (q.includes('hello') || q.includes('hi') || q.includes('namaste') || q.includes('hey')) {
+                return "Namaste! Welcome to Yashoda Hospitals. How can I help you today? You can ask about appointments, doctors, emergency services, or our specializations.";
+            }
+
+            // Appointment Booking
+            if (q.includes('appoint') || q.includes('book') || q.includes('schedule')) {
+                return `📅 <strong>Book an Appointment</strong><br><br>You can book an appointment through:<br>• Call: ${HOSPITAL_INFO.contact.phone}<br>• Website: ${HOSPITAL_INFO.contact.website}<br>• Walk-in at any of our 4 locations<br><br>Our staff will help you find the right specialist based on your health concern.`;
+            }
+
+            // Find Doctor / Specialist
+            if (q.includes('doctor') || q.includes('specialist') || q.includes('consult')) {
+                let depts = "<br>Our specialists include:";
+                HOSPITAL_INFO.specialties.slice(0, 8).forEach(s => {
+                    depts += `<br>• ${s}`;
+                });
+                return `👨‍⚕️ <strong>Find a Specialist</strong>${depts}<br><br>Please tell me your health concern and I'll help connect you with the right specialist.`;
+            }
+
+            // Emergency
+            if (q.includes('emergency') || q.includes('urgent') || q.includes('accident')) {
+                return `🚑 <strong>24/7 Emergency Services</strong><br><br>
+                    ${HOSPITAL_INFO.name} offers round-the-clock emergency care at all 4 locations.<br><br>
+                    Emergency Hotline: <strong>${HOSPITAL_INFO.contact.emergency}</strong><br><br>
+                    Our emergency services include:<br>• Blood Bank<br>• Laboratory & Diagnostics<br>• Ventilator Management<br>• Critical Care Units<br><br>
+                    <em>Don't wait - call immediately in case of emergency!</em>`;
+            }
+
+            // Locations
+            if (q.includes('location') || q.includes('address') || q.includes('near') || q.includes('direction')) {
+                return `📍 <strong>Our Locations</strong><br><br>
+                    ${HOSPITAL_INFO.name} has 4 convenient locations:<br>
+                    • <strong>Somajiguda</strong> - Main Hospital<br>
+                    • <strong>Secunderabad</strong><br>
+                    • <strong>Malakpet</strong><br>
+                    • <strong>Hitec City</strong><br><br>
+                    All locations offer 24/7 emergency services, laboratory, and diagnostics.`;
+            }
+
+            // Health Packages / Checkup
+            if (q.includes('health') || q.includes('checkup') || q.includes('package') || q.includes('test') || q.includes('scan')) {
+                return `💊 <strong>Health Checkup Packages</strong><br><br>
+                    We offer comprehensive health packages including:<br>
+                    • Executive Health Checkups<br>
+                    • Cardiac Risk Assessment<br>
+                    • Diabetes Screening<br>
+                    • Cancer Screening<br>
+                    • Full Body Checkups<br>
+                    • Specialty-specific packages<br><br>
+                    Contact our Helpline for package details and pricing.`;
+            }
+
+            // Cost / Price / Insurance
+            if (q.includes('cost') || q.includes('price') || q.includes('charge') || q.includes('insurance') || q.includes('estimate')) {
+                return `💰 <strong>Cost & Insurance</strong><br><br>
+                    We accept all major insurance providers and have cashless facility options.<br><br>
+                    For cost estimates:<br>
+                    • Contact our helpdesk<br>
+                    • Share your required treatment/procedure<br>
+                    • We'll provide detailed estimates<br><br>
+                    We also offer EMI options for certain procedures.`;
+            }
+
+            // Transplants
+            if (q.includes('transplant') || q.includes('liver') || q.includes('kidney') || q.includes('heart') || q.includes('bone marrow')) {
+                return `🏆 <strong>Transplant Excellence</strong><br><br>
+                    ${HOSPITAL_INFO.name} is a leader in transplants:<br>
+                    • Liver Transplant<br>
+                    • Kidney Transplant<br>
+                    • Heart Transplant<br>
+                    • Bone Marrow Transplant<br><br>
+                    Our transplant success rates are among the highest in India. Consult our transplant coordinators for evaluation.`;
+            }
+
+            // Robotic Surgery
+            if (q.includes('robotic') || q.includes('robot') || q.includes('surgery') || q.includes('surgical')) {
+                return `🤖 <strong>Robotic & Advanced Surgery</strong><br><br>
+                    We offer cutting-edge surgical procedures:<br>
+                    • Robotic Surgery<br>
+                    • Stereotactic Radiosurgery<br>
+                    • HIPEC Treatment<br>
+                    • VATS (Keyhole Surgery)<br>
+                    • Arthroscopy<br>
+                    • Minimally Invasive Procedures<br><br>
+                    These techniques mean faster recovery and less pain for patients.`;
+            }
+
+            // Cancer / Oncology
+            if (q.includes('cancer') || q.includes('tumor') || q.includes('oncology') || q.includes('chemo') || q.includes('radiation')) {
+                return `🎗️ <strong>Cancer Care Center</strong><br><br>
+                    Comprehensive Cancer Treatment:<br>
+                    • Medical Oncology<br>
+                    • Surgical Oncology<br>
+                    • Radiation Therapy<br>
+                    • Stereotactic Radiosurgery<br>
+                    • HIPEC Treatment<br><br>
+                    Our multidisciplinary team provides personalized cancer care.`;
+            }
+
+            // Heart / Cardiac
+            if (q.includes('heart') || q.includes('cardiac') || q.includes('cardio') || q.includes('bypass') || q.includes('stent')) {
+                return `❤️ <strong>Cardiac Sciences</strong><br><br>
+                    Complete Heart Care:<br>
+                    • Heart Transplant<br>
+                    • CT Surgery<br>
+                    • TAVR / TMVR<br>
+                    • Cardiac Catheterization<br>
+                    • 2D Echo & Diagnostics<br>
+                    • 24/7 Cardiac Emergency<br><br>
+                    Our cardiac team performs 1000+ procedures annually.`;
+            }
+
+            // IVF / Fertility / Mother Child
+            if (q.includes('ivf') || q.includes('fertility') || q.includes('baby') || q.includes('pregnant') || q.includes('child') || q.includes('delivery')) {
+                return `👶 <strong>Mother & Child / Fertility</strong><br><br>
+                    Services include:<br>
+                    • IVF & Fertility Treatments<br>
+                    • Normal & C-section Delivery<br>
+                    • NICU for Newborns<br>
+                    • Pediatric Care<br>
+                    • High-risk Pregnancy Care<br><br>
+                    Our Mother & Child wing is one of the busiest in Hyderabad.`;
+            }
+
+            // Neurology / Brain / Spine
+            if (q.includes('brain') || q.includes('neuro') || q.includes('spine') || q.includes('stroke') || q.includes('backbone')) {
+                return `🧠 <strong>Neuroscience & Spine</strong><br><br>
+                    Expert Care for:<br>
+                    • Brain Tumors<br>
+                    • Stroke Treatment<br>
+                    • Spine Surgery<br>
+                    • Epilepsy<br>
+                    • Parkinson's Disease<br>
+                    • Minimally Invasive Neuro Procedures<br><br>
+                    Our neurologists and neurosurgeons are among the best in India.`;
+            }
+
+            // Thank you
+            if (q.includes('thank') || q.includes('thanks')) {
+                return "You're welcome! 🙏<br><br>Is there anything else I can help you with?<br>We're here 24/7 for all your healthcare needs.";
+            }
+
+            // Default
+            return `Thank you for your query! 🙏<br><br>
+                ${HOSPITAL_INFO.name} offers comprehensive healthcare across ${HOSPITAL_INFO.specialties.length}+ specialties.<br><br>
+                For immediate assistance:<br>
+                📞 Call: ${HOSPITAL_INFO.contact.phone}<br>
+                🌐 Visit: ${HOSPITAL_INFO.contact.website}<br><br>
+                Would you like to know about our doctors, appointments, or any specific service?`;
+        }
+
+        function sendTextMessage() {
+            const input = document.getElementById('textInput');
+            const query = input.value.trim();
+            if (!query) return;
+
+            addMessage(query, false);
+            input.value = '';
+            showTyping();
+            updateStatus('Thinking...');
+
+            setTimeout(() => {
+                hideTyping();
+                const response = processQuery(query);
+                addMessage(response);
+                speak(response.replace(/<[^>]*>/g, ''));
+                updateStatus('Ready to assist');
+            }, 800);
+        }
+
+        function askQuestion(question) {
+            document.getElementById('textInput').value = question;
+            sendTextMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendTextMessage();
+        }
+
+        setTimeout(() => {
+            speak("Namaste! Welcome to Yashoda Hospitals. How can I help you?");
+        }, 1000);
+    </script>
+</body>
+</html>
